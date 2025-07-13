@@ -1,0 +1,1580 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>منصة اعتماد - نظام إدارة أنماط التدريب</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <script type="text/javascript" src="https://ff.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=q7bgwlOGlc4M39QtWP2A9Pmx7M35dK4YhyB72EFW9RdHHHTABhyac_D7e_aqOD9S4iYf9whW8AJAUV5ogB0z8Km99jRZgBCuB8oX-MzLycs5ORXRwH3gxNewyZpE93nDeTc4-e5ogiIlZ_uvZIoI6ovtUMs-ZU8FQxPmNI6Flau5tr2q0v-BxF6cc9YUnA19WE1ZA_PJTwAg8mDOfdaLkf33u4VCqwiWUyrozLi7W6YhzX7S228qBuT0rDUXwuuBY7QLWLzJt0MEfb3zKmDrvg5XH7GSRx48wnzBzjICYnHttG23d4ecYxGxD45IVR8-AKbvz50QV2Af6S30Asv3ygR2gptJPm9wYzjBsTfuo6c93QWsEBNe38gVgVrtn8KJohYgZABZDar8XiiaBA9AR2fzkcn7p5JlzwU2cDExIYs" charset="UTF-8"></script><script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        
+        .card-hover {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            border: none;
+            padding: 12px 30px;
+            border-radius: 12px;
+            color: white;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(79, 70, 229, 0.4);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(79, 70, 229, 0.6);
+        }
+        
+        .sidebar {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-right: 1px solid rgba(255, 255, 255, 0.2);
+            width: 280px;
+            position: fixed;
+            right: 0;
+            top: 0;
+            height: 100vh;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+        
+        .sidebar-item {
+            padding: 15px 20px;
+            margin: 5px 15px;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .sidebar-item:hover,
+        .sidebar-item.active {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateX(-5px);
+        }
+        
+        .main-content {
+            margin-right: 280px;
+            padding: 30px;
+            min-height: 100vh;
+        }
+        
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .status-pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .status-approved {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .status-rejected {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .status-in-progress {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+        
+        .workflow-step {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .workflow-step.completed {
+            background: rgba(34, 197, 94, 0.1);
+            border-color: rgba(34, 197, 94, 0.3);
+        }
+        
+        .workflow-step.active {
+            background: rgba(59, 130, 246, 0.1);
+            border-color: rgba(59, 130, 246, 0.3);
+        }
+        
+        .page-hidden {
+            display: none;
+        }
+        
+        .form-control {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 12px 16px;
+            color: white;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+        
+        .form-control::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+        
+        .table-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            overflow: hidden;
+        }
+        
+        .table-header {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .table-row {
+            padding: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .table-row:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 25px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+        
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #4f46e5;
+            margin-bottom: 10px;
+        }
+        
+        .chart-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 30px;
+            height: 400px;
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(34, 197, 94, 0.9);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 12px;
+            z-index: 3000;
+            display: none;
+        }
+        
+        .file-upload-area {
+            border: 2px dashed rgba(255, 255, 255, 0.3);
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .file-upload-area:hover {
+            border-color: #4f46e5;
+            background: rgba(79, 70, 229, 0.1);
+        }
+        
+        .file-upload-area.dragover {
+            border-color: #4f46e5;
+            background: rgba(79, 70, 229, 0.1);
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4f46e5, #7c3aed);
+            transition: width 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <!-- Notification -->
+    <div id="notification" class="notification">
+        <i class="fas fa-check-circle ml-2"></i>
+        <span id="notificationText">تم الحفظ بنجاح</span>
+    </div>
+
+    <!-- Login Page -->
+    <div id="loginPage" class="min-h-screen flex items-center justify-center p-4">
+        <div class="glass-effect w-full max-w-md p-8">
+            <div class="text-center mb-8">
+                <div class="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-graduation-cap text-white text-2xl"></i>
+                </div>
+                <h1 class="text-3xl font-bold text-white mb-2">منصة اعتماد</h1>
+                <p class="text-white text-opacity-70">نظام إدارة أنماط التدريب</p>
+            </div>
+            
+            <form id="loginForm" class="space-y-6">
+                <div>
+                    <label class="block text-white text-sm font-medium mb-2">اسم المستخدم</label>
+                    <input type="text" id="username" class="form-control" placeholder="أدخل اسم المستخدم" required>
+                </div>
+                
+                <div>
+                    <label class="block text-white text-sm font-medium mb-2">كلمة المرور</label>
+                    <input type="password" id="password" class="form-control" placeholder="أدخل كلمة المرور" required>
+                </div>
+                
+                <button type="submit" class="btn-primary w-full">
+                    <i class="fas fa-sign-in-alt ml-2"></i>
+                    تسجيل الدخول
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main Application -->
+    <div id="mainApp" class="page-hidden">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="p-6 border-b border-white border-opacity-20">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-graduation-cap text-white text-lg"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-white font-bold text-lg">منصة اعتماد</h3>
+                        <p class="text-white text-opacity-70 text-sm" id="userRole">مدير النظام</p>
+                    </div>
+                </div>
+            </div>
+            
+            <nav class="mt-6">
+                <div class="sidebar-item active" onclick="showPage('dashboard')">
+                    <i class="fas fa-home text-white"></i>
+                    <span class="text-white">الصفحة الرئيسية</span>
+                </div>
+                
+                <div class="sidebar-item" onclick="showPage('requests')">
+                    <i class="fas fa-file-alt text-white"></i>
+                    <span class="text-white">إدارة الطلبات</span>
+                </div>
+                
+                <div class="sidebar-item" onclick="showPage('patterns')">
+                    <i class="fas fa-layer-group text-white"></i>
+                    <span class="text-white">أنماط التدريب</span>
+                </div>
+                
+                <div class="sidebar-item" onclick="showPage('dataManagement')">
+                    <i class="fas fa-database text-white"></i>
+                    <span class="text-white">إدارة المدخلات</span>
+                </div>
+                
+                <div class="sidebar-item" onclick="showPage('users')">
+                    <i class="fas fa-users text-white"></i>
+                    <span class="text-white">المستخدمين والصلاحيات</span>
+                </div>
+                
+                <div class="sidebar-item" onclick="showPage('support')">
+                    <i class="fas fa-life-ring text-white"></i>
+                    <span class="text-white">الدعم الفني</span>
+                </div>
+                
+                <div class="sidebar-item" onclick="logout()">
+                    <i class="fas fa-sign-out-alt text-white"></i>
+                    <span class="text-white">تسجيل الخروج</span>
+                </div>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Dashboard Page -->
+            <div id="dashboardPage" class="page-content">
+                <div class="flex justify-between items-center mb-8">
+                    <h2 class="text-3xl font-bold text-white">الصفحة الرئيسية</h2>
+                    <div class="text-white text-opacity-70">
+                        <i class="fas fa-calendar-alt ml-2"></i>
+                        <span id="currentDate"></span>
+                    </div>
+                </div>
+
+                <!-- Stats Grid -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number">45</div>
+                        <h3 class="text-white font-semibold">إجمالي الطلبات</h3>
+                        <p class="text-white text-opacity-70 text-sm">هذا الشهر</p>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-number">28</div>
+                        <h3 class="text-white font-semibold">طلبات معتمدة</h3>
+                        <p class="text-white text-opacity-70 text-sm">معدل الموافقة 62%</p>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-number">12</div>
+                        <h3 class="text-white font-semibold">قيد المراجعة</h3>
+                        <p class="text-white text-opacity-70 text-sm">متوسط الوقت 3 أيام</p>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-number">5</div>
+                        <h3 class="text-white font-semibold">طلبات طارئة</h3>
+                        <p class="text-white text-opacity-70 text-sm">تحتاج موافقة عاجلة</p>
+                    </div>
+                </div>
+
+                <!-- Charts -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="chart-container">
+                        <h3 class="text-white font-semibold mb-4">إحصائيات الطلبات الشهرية</h3>
+                        <canvas id="monthlyChart" style="height: 300px;"></canvas>
+                    </div>
+                    
+                    <div class="chart-container">
+                        <h3 class="text-white font-semibold mb-4">توزيع أنماط التدريب</h3>
+                        <canvas id="patternsChart" style="height: 300px;"></canvas>
+                    </div>
+                </div>
+
+                <!-- Recent Requests -->
+                <div class="table-container mt-8">
+                    <div class="table-header">
+                        <h3 class="text-white font-semibold text-lg">الطلبات الأخيرة</h3>
+                    </div>
+                    <div id="recentRequests">
+                        <div class="table-row grid grid-cols-5 gap-4 items-center">
+                            <div class="text-white">#2024001</div>
+                            <div class="text-white">كلية التقنية بالرياض</div>
+                            <div class="text-white">تدريب عن بُعد</div>
+                            <div><span class="status-badge status-pending">قيد المراجعة</span></div>
+                            <div class="text-white text-opacity-70">2024/01/15</div>
+                        </div>
+                        <div class="table-row grid grid-cols-5 gap-4 items-center">
+                            <div class="text-white">#2024002</div>
+                            <div class="text-white">كلية التقنية بجدة</div>
+                            <div class="text-white">تدريب مدمج</div>
+                            <div><span class="status-badge status-approved">معتمد</span></div>
+                            <div class="text-white text-opacity-70">2024/01/14</div>
+                        </div>
+                        <div class="table-row grid grid-cols-5 gap-4 items-center">
+                            <div class="text-white">#2024003</div>
+                            <div class="text-white">كلية التقنية بالدمام</div>
+                            <div class="text-white">تدريب ذاتي</div>
+                            <div><span class="status-badge status-in-progress">قيد التنفيذ</span></div>
+                            <div class="text-white text-opacity-70">2024/01/13</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Requests Management Page -->
+            <div id="requestsPage" class="page-content page-hidden">
+                <div class="flex justify-between items-center mb-8">
+                    <h2 class="text-3xl font-bold text-white">إدارة الطلبات</h2>
+                    <button class="btn-primary" onclick="showNewRequestModal()">
+                        <i class="fas fa-plus ml-2"></i>
+                        طلب جديد
+                    </button>
+                </div>
+
+                <!-- Filter Options -->
+                <div class="glass-effect p-6 mb-6 rounded-2xl">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div>
+                            <label class="block text-white text-sm font-medium mb-2">الحالة</label>
+                            <select class="form-control">
+                                <option value="">جميع الحالات</option>
+                                <option value="pending">قيد المراجعة</option>
+                                <option value="approved">معتمد</option>
+                                <option value="rejected">مرفوض</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-white text-sm font-medium mb-2">نوع التدريب</label>
+                            <select class="form-control">
+                                <option value="">جميع الأنواع</option>
+                                <option value="remote">عن بُعد</option>
+                                <option value="self">ذاتي</option>
+                                <option value="blended">مدمج</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-white text-sm font-medium mb-2">الكلية</label>
+                            <select class="form-control">
+                                <option value="">جميع الكليات</option>
+                                <option value="riyadh">كلية التقنية بالرياض</option>
+                                <option value="jeddah">كلية التقنية بجدة</option>
+                                <option value="dammam">كلية التقنية بالدمام</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-white text-sm font-medium mb-2">البحث</label>
+                            <input type="text" class="form-control" placeholder="رقم الطلب أو اسم المقرر">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Requests List -->
+                <div class="table-container">
+                    <div class="table-header grid grid-cols-7 gap-4">
+                        <div class="text-white font-semibold">رقم الطلب</div>
+                        <div class="text-white font-semibold">الكلية</div>
+                        <div class="text-white font-semibold">المقرر</div>
+                        <div class="text-white font-semibold">نوع التدريب</div>
+                        <div class="text-white font-semibold">الحالة</div>
+                        <div class="text-white font-semibold">التاريخ</div>
+                        <div class="text-white font-semibold">الإجراءات</div>
+                    </div>
+                    <div id="requestsList">
+                        <div class="table-row grid grid-cols-7 gap-4 items-center">
+                            <div class="text-white font-mono">#2024001</div>
+                            <div class="text-white">كلية التقنية بالرياض</div>
+                            <div class="text-white">البرمجة المتقدمة</div>
+                            <div class="text-white">تدريب عن بُعد</div>
+                            <div><span class="status-badge status-pending">قيد المراجعة</span></div>
+                            <div class="text-white text-opacity-70">2024/01/15</div>
+                            <div class="flex gap-2">
+                                <button class="btn-primary px-3 py-1 text-sm" onclick="showRequestDetails('#2024001')">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="btn-primary px-3 py-1 text-sm" onclick="showWorkflowModal('#2024001')">
+                                    <i class="fas fa-route"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="table-row grid grid-cols-7 gap-4 items-center">
+                            <div class="text-white font-mono">#2024002</div>
+                            <div class="text-white">كلية التقنية بجدة</div>
+                            <div class="text-white">شبكات الحاسوب</div>
+                            <div class="text-white">تدريب مدمج</div>
+                            <div><span class="status-badge status-approved">معتمد</span></div>
+                            <div class="text-white text-opacity-70">2024/01/14</div>
+                            <div class="flex gap-2">
+                                <button class="btn-primary px-3 py-1 text-sm" onclick="showRequestDetails('#2024002')">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="btn-primary px-3 py-1 text-sm" onclick="showWorkflowModal('#2024002')">
+                                    <i class="fas fa-route"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="table-row grid grid-cols-7 gap-4 items-center">
+                            <div class="text-white font-mono">#2024003</div>
+                            <div class="text-white">كلية التقنية بالدمام</div>
+                            <div class="text-white">قواعد البيانات</div>
+                            <div class="text-white">تدريب ذاتي</div>
+                            <div><span class="status-badge status-in-progress">قيد التنفيذ</span></div>
+                            <div class="text-white text-opacity-70">2024/01/13</div>
+                            <div class="flex gap-2">
+                                <button class="btn-primary px-3 py-1 text-sm" onclick="showRequestDetails('#2024003')">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="btn-primary px-3 py-1 text-sm" onclick="showWorkflowModal('#2024003')">
+                                    <i class="fas fa-route"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Training Patterns Page -->
+            <div id="patternsPage" class="page-content page-hidden">
+                <div class="flex justify-between items-center mb-8">
+                    <h2 class="text-3xl font-bold text-white">أنماط التدريب</h2>
+                    <button class="btn-primary" onclick="showNewPatternModal()">
+                        <i class="fas fa-plus ml-2"></i>
+                        نمط جديد
+                    </button>
+                </div>
+
+                <!-- Patterns Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="glass-effect p-6 rounded-2xl card-hover">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-12 h-12 bg-blue-500 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-laptop text-white text-xl"></i>
+                            </div>
+                            <div class="flex gap-2">
+                                <button class="btn-primary px-3 py-1 text-sm" onclick="editPattern('remote')">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn-primary px-3 py-1 text-sm" onclick="togglePattern('remote')">
+                                    <i class="fas fa-power-off"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <h3 class="text-white font-semibold text-lg mb-2">التدريب عن بُعد</h3>
+                        <p class="text-white text-opacity-70 text-sm mb-4">تدريب كامل عبر الإنترنت باستخدام المنصات الرقمية</p>
+                        <div class="flex items-center justify-between">
+                            <span class="status-badge status-approved">فعال</span>
+                            <span class="text-white text-opacity-70 text-sm">12 مقرر</span>
+                        </div>
+                    </div>
+
+                    <div class="glass-effect p-6 rounded-2xl card-hover">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-12 h-12 bg-green-500 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-user-graduate text-white text-xl"></i>
+                            </div>
+                            <div class="flex gap-2">
+                                <button class="btn-primary px-3 py-1 text-sm" onclick="editPattern('self')">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn-primary px-3 py-1 text-sm" onclick="togglePattern('self')">
+                                    <i class="fas fa-power-off"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <h3 class="text-white font-semibold text-lg mb-2">التدريب الذاتي</h3>
+                        <p class="text-white text-opacity-70 text-sm mb-4">تعلم مستقل حسب وتيرة المتدرب الخاصة</p>
+                        <div class="flex items-center justify-between">
+                            <span class="status-badge status-approved">فعال</span>
+                            <span class="text-white text-opacity-70 text-sm">8 مقررات</span>
+                        </div>
+                    </div>
+
+                    <div class="glass-effect p-6 rounded-2xl card-hover">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-12 h-12 bg-purple-500 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-layer-group text-white text-xl"></i>
+                            </div>
+                            <div class="flex gap-2">
+                                <button class="btn-primary px-3 py-1 text-sm" onclick="editPattern('blended')">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn-primary px-3 py-1 text-sm" onclick="togglePattern('blended')">
+                                    <i class="fas fa-power-off"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <h3 class="text-white font-semibold text-lg mb-2">التدريب المدمج</h3>
+                        <p class="text-white text-opacity-70 text-sm mb-4">دمج التدريب المباشر مع التدريب الإلكتروني</p>
+                        <div class="flex items-center justify-between">
+                            <span class="status-badge status-approved">فعال</span>
+                            <span class="text-white text-opacity-70 text-sm">15 مقرر</span>
+                        </div>
+                    </div>
+
+                    <div class="glass-effect p-6 rounded-2xl card-hover">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-12 h-12 bg-red-500 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-exclamation-triangle text-white text-xl"></i>
+                            </div>
+                            <div class="flex gap-2">
+                                <button class="btn-primary px-3 py-1 text-sm" onclick="editPattern('emergency')">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn-primary px-3 py-1 text-sm" onclick="togglePattern('emergency')">
+                                    <i class="fas fa-power-off"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <h3 class="text-white font-semibold text-lg mb-2">التدريب الطارئ</h3>
+                        <p class="text-white text-opacity-70 text-sm mb-4">للظروف الاستثنائية مثل الطقس أو انقطاع الكهرباء</p>
+                        <div class="flex items-center justify-between">
+                            <span class="status-badge status-pending">بانتظار التفعيل</span>
+                            <span class="text-white text-opacity-70 text-sm">3 مقررات</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pattern Details -->
+                <div class="glass-effect p-6 rounded-2xl mt-8">
+                    <h3 class="text-white font-semibold text-lg mb-4">تفاصيل الأنماط</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <h4 class="text-white font-medium mb-3">الشروط والأحكام</h4>
+                            <ul class="text-white text-opacity-70 space-y-2">
+                                <li>• موافقة مسبقة من الإدارة العامة للمنطقة</li>
+                                <li>• توفر البنية التحتية التقنية المناسبة</li>
+                                <li>• تدريب المدربين على استخدام المنصات الرقمية</li>
+                                <li>• ضمان جودة المحتوى التدريبي</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 class="text-white font-medium mb-3">معايير التقييم</h4>
+                            <ul class="text-white text-opacity-70 space-y-2">
+                                <li>• نسبة حضور لا تقل عن 80%</li>
+                                <li>• اجتياز الاختبارات النظرية والعملية</li>
+                                <li>• تقييم المدرب للأداء العملي</li>
+                                <li>• تقديم التقارير الدورية للتقدم</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Data Management Page -->
+            <div id="dataManagementPage" class="page-content page-hidden">
+                <div class="flex justify-between items-center mb-8">
+                    <h2 class="text-3xl font-bold text-white">إدارة المدخلات</h2>
+                    <div class="flex gap-3">
+                        <button class="btn-primary" onclick="downloadTemplate('colleges')">
+                            <i class="fas fa-download ml-2"></i>
+                            قالب الكليات
+                        </button>
+                        <button class="btn-primary" onclick="downloadTemplate('courses')">
+                            <i class="fas fa-download ml-2"></i>
+                            قالب المقررات
+                        </button>
+                        <button class="btn-primary" onclick="downloadTemplate('users')">
+                            <i class="fas fa-download ml-2"></i>
+                            قالب المستخدمين
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Upload Sections -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div class="glass-effect p-6 rounded-2xl">
+                        <h3 class="text-white font-semibold text-lg mb-4">استيراد الكليات</h3>
+                        <div class="file-upload-area" onclick="document.getElementById('collegesFile').click()">
+                            <i class="fas fa-building text-white text-3xl mb-3"></i>
+                            <p class="text-white text-opacity-70">اضغط لرفع ملف الكليات</p>
+                            <input type="file" id="collegesFile" accept=".xlsx,.xls" style="display: none;" onchange="handleFileUpload('colleges', this)">
+                        </div>
+                        <div class="mt-4">
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 0%" id="collegesProgress"></div>
+                            </div>
+                            <p class="text-white text-opacity-70 text-sm mt-2" id="collegesStatus">جاهز للاستيراد</p>
+                        </div>
+                    </div>
+
+                    <div class="glass-effect p-6 rounded-2xl">
+                        <h3 class="text-white font-semibold text-lg mb-4">استيراد المقررات</h3>
+                        <div class="file-upload-area" onclick="document.getElementById('coursesFile').click()">
+                            <i class="fas fa-book text-white text-3xl mb-3"></i>
+                            <p class="text-white text-opacity-70">اضغط لرفع ملف المقررات</p>
+                            <input type="file" id="coursesFile" accept=".xlsx,.xls" style="display: none;" onchange="handleFileUpload('courses', this)">
+                        </div>
+                        <div class="mt-4">
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 0%" id="coursesProgress"></div>
+                            </div>
+                            <p class="text-white text-opacity-70 text-sm mt-2" id="coursesStatus">جاهز للاستيراد</p>
+                        </div>
+                    </div>
+
+                    <div class="glass-effect p-6 rounded-2xl">
+                        <h3 class="text-white font-semibold text-lg mb-4">استيراد المستخدمين</h3>
+                        <div class="file-upload-area" onclick="document.getElementById('usersFile').click()">
+                            <i class="fas fa-users text-white text-3xl mb-3"></i>
+                            <p class="text-white text-opacity-70">اضغط لرفع ملف المستخدمين</p>
+                            <input type="file" id="usersFile" accept=".xlsx,.xls" style="display: none;" onchange="handleFileUpload('users', this)">
+                        </div>
+                        <div class="mt-4">
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 0%" id="usersProgress"></div>
+                            </div>
+                            <p class="text-white text-opacity-70 text-sm mt-2" id="usersStatus">جاهز للاستيراد</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Data Summary -->
+                <div class="glass-effect p-6 rounded-2xl mb-8">
+                    <h3 class="text-white font-semibold text-lg mb-4">ملخص البيانات</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="text-center">
+                            <div class="text-3xl font-bold text-blue-400 mb-2">24</div>
+                            <p class="text-white text-opacity-70">كلية تقنية</p>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-3xl font-bold text-green-400 mb-2">156</div>
+                            <p class="text-white text-opacity-70">مقرر دراسي</p>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-3xl font-bold text-purple-400 mb-2">89</div>
+                            <p class="text-white text-opacity-70">مستخدم نشط</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Import History -->
+                <div class="table-container">
+                    <div class="table-header">
+                        <h3 class="text-white font-semibold text-lg">سجل الاستيراد</h3>
+                    </div>
+                    <div class="table-header grid grid-cols-5 gap-4">
+                        <div class="text-white font-semibold">نوع البيانات</div>
+                        <div class="text-white font-semibold">اسم الملف</div>
+                        <div class="text-white font-semibold">عدد السجلات</div>
+                        <div class="text-white font-semibold">التاريخ</div>
+                        <div class="text-white font-semibold">الحالة</div>
+                    </div>
+                    <div class="table-row grid grid-cols-5 gap-4 items-center">
+                        <div class="text-white">الكليات</div>
+                        <div class="text-white">colleges_2024.xlsx</div>
+                        <div class="text-white">24</div>
+                        <div class="text-white text-opacity-70">2024/01/15</div>
+                        <div><span class="status-badge status-approved">مكتمل</span></div>
+                    </div>
+                    <div class="table-row grid grid-cols-5 gap-4 items-center">
+                        <div class="text-white">المقررات</div>
+                        <div class="text-white">courses_2024.xlsx</div>
+                        <div class="text-white">156</div>
+                        <div class="text-white text-opacity-70">2024/01/14</div>
+                        <div><span class="status-badge status-approved">مكتمل</span></div>
+                    </div>
+                    <div class="table-row grid grid-cols-5 gap-4 items-center">
+                        <div class="text-white">المستخدمين</div>
+                        <div class="text-white">users_2024.xlsx</div>
+                        <div class="text-white">89</div>
+                        <div class="text-white text-opacity-70">2024/01/13</div>
+                        <div><span class="status-badge status-approved">مكتمل</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Users Management Page -->
+            <div id="usersPage" class="page-content page-hidden">
+                <div class="flex justify-between items-center mb-8">
+                    <h2 class="text-3xl font-bold text-white">المستخدمين والصلاحيات</h2>
+                    <button class="btn-primary" onclick="showNewUserModal()">
+                        <i class="fas fa-user-plus ml-2"></i>
+                        مستخدم جديد
+                    </button>
+                </div>
+
+                <!-- Users Stats -->
+                <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
+                    <div class="glass-effect p-4 rounded-2xl text-center">
+                        <div class="text-2xl font-bold text-blue-400 mb-2">15</div>
+                        <p class="text-white text-opacity-70 text-sm">إداري كلية</p>
+                    </div>
+                    <div class="glass-effect p-4 rounded-2xl text-center">
+                        <div class="text-2xl font-bold text-green-400 mb-2">24</div>
+                        <p class="text-white text-opacity-70 text-sm">عميد كلية</p>
+                    </div>
+                    <div class="glass-effect p-4 rounded-2xl text-center">
+                        <div class="text-2xl font-bold text-purple-400 mb-2">13</div>
+                        <p class="text-white text-opacity-70 text-sm">إدارة المنطقة</p>
+                    </div>
+                    <div class="glass-effect p-4 rounded-2xl text-center">
+                        <div class="text-2xl font-bold text-red-400 mb-2">5</div>
+                        <p class="text-white text-opacity-70 text-sm">نائب محافظ</p>
+                    </div>
+                    <div class="glass-effect p-4 rounded-2xl text-center">
+                        <div class="text-2xl font-bold text-yellow-400 mb-2">3</div>
+                        <p class="text-white text-opacity-70 text-sm">مدير النظام</p>
+                    </div>
+                </div>
+
+                <!-- Users List -->
+                <div class="table-container">
+                    <div class="table-header grid grid-cols-6 gap-4">
+                        <div class="text-white font-semibold">الاسم</div>
+                        <div class="text-white font-semibold">المسمى الوظيفي</div>
+                        <div class="text-white font-semibold">الكلية/الجهة</div>
+                        <div class="text-white font-semibold">الدور</div>
+                        <div class="text-white font-semibold">الحالة</div>
+                        <div class="text-white font-semibold">الإجراءات</div>
+                    </div>
+                    <div id="usersList">
+                        <div class="table-row grid grid-cols-6 gap-4 items-center">
+                            <div class="text-white">أحمد محمد السالم</div>
+                            <div class="text-white">إداري أول</div>
+                            <div class="text-white">كلية التقنية بالرياض</div>
+                            <div class="text-white">إداري كلية</div>
+                            <div><span class="status-badge status-approved">نشط</span></div>
+                            <div class="flex gap-2">
+                                <button class="btn-primary px-3 py-1 text-sm" onclick="editUser('user1')">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn-primary px-3 py-1 text-sm" onclick="toggleUser('user1')">
+                                    <i class="fas fa-power-off"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="table-row grid grid-cols-6 gap-4 items-center">
+                            <div class="text-white">فاطمة علي الأحمد</div>
+                            <div class="text-white">عميد</div>
+                            <div class="text-white">كلية التقنية بجدة</div>
+                            <div class="text-white">عميد كلية</div>
+                            <div><span class="status-badge status-approved">نشط</span></div>
+                            <div class="flex gap-2">
+                                <button class="btn-primary px-3 py-1 text-sm" onclick="editUser('user2')">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn-primary px-3 py-1 text-sm" onclick="toggleUser('user2')">
+                                    <i class="fas fa-power-off"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="table-row grid grid-cols-6 gap-4 items-center">
+                            <div class="text-white">خالد عبدالله النمر</div>
+                            <div class="text-white">مدير إدارة</div>
+                            <div class="text-white">الإدارة العامة - المنطقة الوسطى</div>
+                            <div class="text-white">إدارة المنطقة</div>
+                            <div><span class="status-badge status-approved">نشط</span></div>
+                            <div class="flex gap-2">
+                                <button class="btn-primary px-3 py-1 text-sm" onclick="editUser('user3')">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn-primary px-3 py-1 text-sm" onclick="toggleUser('user3')">
+                                    <i class="fas fa-power-off"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Permissions Matrix -->
+                <div class="glass-effect p-6 rounded-2xl mt-8">
+                    <h3 class="text-white font-semibold text-lg mb-4">مصفوفة الصلاحيات</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-white">
+                            <thead>
+                                <tr class="border-b border-white border-opacity-20">
+                                    <th class="text-right p-3">الصلاحية</th>
+                                    <th class="text-center p-3">إداري كلية</th>
+                                    <th class="text-center p-3">عميد كلية</th>
+                                    <th class="text-center p-3">إدارة المنطقة</th>
+                                    <th class="text-center p-3">نائب المحافظ</th>
+                                    <th class="text-center p-3">مدير النظام</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="border-b border-white border-opacity-10">
+                                    <td class="p-3">إنشاء طلب جديد</td>
+                                    <td class="text-center p-3"><i class="fas fa-check text-green-400"></i></td>
+                                    <td class="text-center p-3"><i class="fas fa-check text-green-400"></i></td>
+                                    <td class="text-center p-3"><i class="fas fa-times text-red-400"></i></td>
+                                    <td class="text-center p-3"><i class="fas fa-times text-red-400"></i></td>
+                                    <td class="text-center p-3"><i class="fas fa-check text-green-400"></i></td>
+                                </tr>
+                                <tr class="border-b border-white border-opacity-10">
+                                    <td class="p-3">مراجعة الطلبات</td>
+                                    <td class="text-center p-3"><i class="fas fa-check text-green-400"></i></td>
+                                    <td class="text-center p-3"><i class="fas fa-check text-green-400"></i></td>
+                                    <td class="text-center p-3"><i class="fas fa-check text-green-400"></i></td>
+                                    <td class="text-center p-3"><i class="fas fa-check text-green-400"></i></td>
+                                    <td class="text-center p-3"><i class="fas fa-check text-green-400"></i></td>
+                                </tr>
+                                <tr class="border-b border-white border-opacity-10">
+                                    <td class="p-3">موافقة الطلبات العادية</td>
+                                    <td class="text-center p-3"><i class="fas fa-times text-red-400"></i></td>
+                                    <td class="text-center p-3"><i class="fas fa-times text-red-400"></i></td>
+                                    <td class="text-center p-3"><i class="fas fa-check text-green-400"></i></td>
+                                    <td class="text-center p-3"><i class="fas fa-times text-red-400"></i></td>
+                                    <td class="text-center p-3"><i class="fas fa-check text-green-400"></i></td>
+                                </tr>
+                                <tr class="border-b border-white border-opacity-10">
+                                    <td class="p-3">موافقة الطلبات الطارئة</td>
+                                    <td class="text-center p-3"><i class="fas fa-times text-red-400"></i></td>
+                                    <td class="text-center p-3"><i class="fas fa-times text-red-400"></i></td>
+                                    <td class="text-center p-3"><i class="fas fa-times text-red-400"></i></td>
+                                    <td class="text-center p-3"><i class="fas fa-check text-green-400"></i></td>
+                                    <td class="text-center p-3"><i class="fas fa-check text-green-400"></i></td>
+                                </tr>
+                                <tr class="border-b border-white border-opacity-10">
+                                    <td class="p-3">إدارة المستخدمين</td>
+                                    <td class="text-center p-3"><i class="fas fa-times text-red-400"></i></td>
+                                    <td class="text-center p-3"><i class="fas fa-times text-red-400"></i></td>
+                                    <td class="text-center p-3"><i class="fas fa-times text-red-400"></i></td>
+                                    <td class="text-center p-3"><i class="fas fa-times text-red-400"></i></td>
+                                    <td class="text-center p-3"><i class="fas fa-check text-green-400"></i></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Support Page -->
+            <div id="supportPage" class="page-content page-hidden">
+                <div class="flex justify-between items-center mb-8">
+                    <h2 class="text-3xl font-bold text-white">الدعم الفني</h2>
+                    <button class="btn-primary" onclick="showNewTicketModal()">
+                        <i class="fas fa-plus ml-2"></i>
+                        طلب دعم جديد
+                    </button>
+                </div>
+
+                <!-- Support Stats -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+                    <div class="glass-effect p-4 rounded-2xl text-center">
+                        <div class="text-2xl font-bold text-blue-400 mb-2">23</div>
+                        <p class="text-white text-opacity-70 text-sm">تذاكر جديدة</p>
+                    </div>
+                    <div class="glass-effect p-4 rounded-2xl text-center">
+                        <div class="text-2xl font-bold text-yellow-400 mb-2">15</div>
+                        <p class="text-white text-opacity-70 text-sm">قيد المراجعة</p>
+                    </div>
+                    <div class="glass-effect p-4 rounded-2xl text-center">
+                        <div class="text-2xl font-bold text-green-400 mb-2">89</div>
+                        <p class="text-white text-opacity-70 text-sm">مغلقة</p>
+                    </div>
+                    <div class="glass-effect p-4 rounded-2xl text-center">
+                        <div class="text-2xl font-bold text-purple-400 mb-2">4.8</div>
+                        <p class="text-white text-opacity-70 text-sm">تقييم الخدمة</p>
+                    </div>
+                </div>
+
+                <!-- Support Tickets -->
+                <div class="table-container">
+                    <div class="table-header grid grid-cols-6 gap-4">
+                        <div class="text-white font-semibold">رقم التذكرة</div>
+                        <div class="text-white font-semibold">الموضوع</div>
+                        <div class="text-white font-semibold">النوع</div>
+                        <div class="text-white font-semibold">الأولوية</div>
+                        <div class="text-white font-semibold">الحالة</div>
+                        <div class="text-white font-semibold">التاريخ</div>
+                    </div>
+                    <div id="supportTickets">
+                        <div class="table-row grid grid-cols-6 gap-4 items-center">
+                            <div class="text-white font-mono">#SUP001</div>
+                            <div class="text-white">مشكلة في تسجيل الدخول</div>
+                            <div class="text-white">تقني</div>
+                            <div><span class="status-badge status-rejected">عاجل</span></div>
+                            <div><span class="status-badge status-in-progress">قيد الحل</span></div>
+                            <div class="text-white text-opacity-70">2024/01/15</div>
+                        </div>
+                        <div class="table-row grid grid-cols-6 gap-4 items-center">
+                            <div class="text-white font-mono">#SUP002</div>
+                            <div class="text-white">طلب تدريب على النظام</div>
+                            <div class="text-white">تدريب</div>
+                            <div><span class="status-badge status-pending">عادي</span></div>
+                            <div><span class="status-badge status-pending">جديد</span></div>
+                            <div class="text-white text-opacity-70">2024/01/14</div>
+                        </div>
+                        <div class="table-row grid grid-cols-6 gap-4 items-center">
+                            <div class="text-white font-mono">#SUP003</div>
+                            <div class="text-white">اقتراح تحسين الواجهة</div>
+                            <div class="text-white">اقتراح</div>
+                            <div><span class="status-badge status-pending">عادي</span></div>
+                            <div><span class="status-badge status-approved">مغلق</span></div>
+                            <div class="text-white text-opacity-70">2024/01/13</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Knowledge Base -->
+                <div class="glass-effect p-6 rounded-2xl mt-8">
+                    <h3 class="text-white font-semibold text-lg mb-4">قاعدة المعرفة</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="bg-white bg-opacity-10 p-4 rounded-lg">
+                            <h4 class="text-white font-medium mb-2">كيفية إنشاء طلب جديد</h4>
+                            <p class="text-white text-opacity-70 text-sm">دليل شامل لإنشاء طلب التحويل لأنماط التدريب المختلفة</p>
+                        </div>
+                        <div class="bg-white bg-opacity-10 p-4 rounded-lg">
+                            <h4 class="text-white font-medium mb-2">حل مشاكل تسجيل الدخول</h4>
+                            <p class="text-white text-opacity-70 text-sm">خطوات استرداد كلمة المرور وحل مشاكل الدخول</p>
+                        </div>
+                        <div class="bg-white bg-opacity-10 p-4 rounded-lg">
+                            <h4 class="text-white font-medium mb-2">استيراد البيانات</h4>
+                            <p class="text-white text-opacity-70 text-sm">تعليمات استيراد الكليات والمقررات والمستخدمين</p>
+                        </div>
+                        <div class="bg-white bg-opacity-10 p-4 rounded-lg">
+                            <h4 class="text-white font-medium mb-2">إدارة الصلاحيات</h4>
+                            <p class="text-white text-opacity-70 text-sm">كيفية تعيين الأدوار وإدارة صلاحيات المستخدمين</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <!-- New Request Modal -->
+    <div id="newRequestModal" class="modal">
+        <div class="modal-content">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-white font-semibold text-xl">طلب جديد</h3>
+                <button class="text-white" onclick="closeModal('newRequestModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="newRequestForm" class="space-y-4">
+                <div>
+                    <label class="block text-white text-sm font-medium mb-2">الكلية</label>
+                    <select class="form-control">
+                        <option value="">اختر الكلية</option>
+                        <option value="riyadh">كلية التقنية بالرياض</option>
+                        <option value="jeddah">كلية التقنية بجدة</option>
+                        <option value="dammam">كلية التقنية بالدمام</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-white text-sm font-medium mb-2">المقرر</label>
+                    <select class="form-control">
+                        <option value="">اختر المقرر</option>
+                        <option value="programming">البرمجة المتقدمة</option>
+                        <option value="networks">شبكات الحاسوب</option>
+                        <option value="database">قواعد البيانات</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-white text-sm font-medium mb-2">نوع التدريب</label>
+                    <select class="form-control">
+                        <option value="">اختر نوع التدريب</option>
+                        <option value="remote">تدريب عن بُعد</option>
+                        <option value="self">تدريب ذاتي</option>
+                        <option value="blended">تدريب مدمج</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-white text-sm font-medium mb-2">المبرر</label>
+                    <textarea class="form-control" rows="3" placeholder="أدخل مبرر الطلب"></textarea>
+                </div>
+                <div>
+                    <label class="block text-white text-sm font-medium mb-2">نوع الطلب</label>
+                    <select class="form-control">
+                        <option value="normal">عادي</option>
+                        <option value="emergency">طارئ</option>
+                    </select>
+                </div>
+                <div class="flex gap-3 mt-6">
+                    <button type="submit" class="btn-primary">إرسال الطلب</button>
+                    <button type="button" class="btn-primary" onclick="closeModal('newRequestModal')">إلغاء</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Workflow Modal -->
+    <div id="workflowModal" class="modal">
+        <div class="modal-content">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-white font-semibold text-xl">مسار الموافقة</h3>
+                <button class="text-white" onclick="closeModal('workflowModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div id="workflowSteps">
+                <div class="workflow-step completed">
+                    <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center ml-3">
+                        <i class="fas fa-check text-white text-sm"></i>
+                    </div>
+                    <div class="flex-1">
+                        <h4 class="text-white font-medium">تم إرسال الطلب</h4>
+                        <p class="text-white text-opacity-70 text-sm">2024/01/15 - 10:30 ص</p>
+                    </div>
+                </div>
+                <div class="workflow-step active">
+                    <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center ml-3">
+                        <i class="fas fa-clock text-white text-sm"></i>
+                    </div>
+                    <div class="flex-1">
+                        <h4 class="text-white font-medium">قيد المراجعة - الإدارة العامة</h4>
+                        <p class="text-white text-opacity-70 text-sm">متوقع: 2024/01/17</p>
+                    </div>
+                </div>
+                <div class="workflow-step">
+                    <div class="w-8 h-8 bg-gray-500 rounded-full flex items-center justify-center ml-3">
+                        <i class="fas fa-hourglass text-white text-sm"></i>
+                    </div>
+                    <div class="flex-1">
+                        <h4 class="text-white font-medium">في انتظار الموافقة النهائية</h4>
+                        <p class="text-white text-opacity-70 text-sm">لم يتم البدء بعد</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- New Pattern Modal -->
+    <div id="newPatternModal" class="modal">
+        <div class="modal-content">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-white font-semibold text-xl">نمط تدريب جديد</h3>
+                <button class="text-white" onclick="closeModal('newPatternModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="newPatternForm" class="space-y-4">
+                <div>
+                    <label class="block text-white text-sm font-medium mb-2">اسم النمط</label>
+                    <input type="text" class="form-control" placeholder="مثال: تدريب هجين">
+                </div>
+                <div>
+                    <label class="block text-white text-sm font-medium mb-2">الوصف</label>
+                    <textarea class="form-control" rows="3" placeholder="وصف مفصل للنمط"></textarea>
+                </div>
+                <div>
+                    <label class="block text-white text-sm font-medium mb-2">الشروط والأحكام</label>
+                    <textarea class="form-control" rows="4" placeholder="الشروط والأحكام الخاصة بهذا النمط"></textarea>
+                </div>
+                <div>
+                    <label class="block text-white text-sm font-medium mb-2">مسار الموافقة</label>
+                    <select class="form-control">
+                        <option value="normal">عادي</option>
+                        <option value="emergency">طارئ</option>
+                    </select>
+                </div>
+                <div class="flex gap-3 mt-6">
+                    <button type="submit" class="btn-primary">إضافة النمط</button>
+                    <button type="button" class="btn-primary" onclick="closeModal('newPatternModal')">إلغاء</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- New User Modal -->
+    <div id="newUserModal" class="modal">
+        <div class="modal-content">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-white font-semibold text-xl">مستخدم جديد</h3>
+                <button class="text-white" onclick="closeModal('newUserModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="newUserForm" class="space-y-4">
+                <div>
+                    <label class="block text-white text-sm font-medium mb-2">الاسم الكامل</label>
+                    <input type="text" class="form-control" placeholder="أدخل الاسم الكامل">
+                </div>
+                <div>
+                    <label class="block text-white text-sm font-medium mb-2">اسم المستخدم</label>
+                    <input type="text" class="form-control" placeholder="أدخل اسم المستخدم">
+                </div>
+                <div>
+                    <label class="block text-white text-sm font-medium mb-2">البريد الإلكتروني</label>
+                    <input type="email" class="form-control" placeholder="أدخل البريد الإلكتروني">
+                </div>
+                <div>
+                    <label class="block text-white text-sm font-medium mb-2">الدور</label>
+                    <select class="form-control">
+                        <option value="">اختر الدور</option>
+                        <option value="college_admin">إداري كلية</option>
+                        <option value="dean">عميد كلية</option>
+                        <option value="regional_admin">إدارة المنطقة</option>
+                        <option value="deputy_governor">نائب المحافظ</option>
+                        <option value="system_admin">مدير النظام</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-white text-sm font-medium mb-2">الكلية/الجهة</label>
+                    <select class="form-control">
+                        <option value="">اختر الكلية/الجهة</option>
+                        <option value="riyadh">كلية التقنية بالرياض</option>
+                        <option value="jeddah">كلية التقنية بجدة</option>
+                        <option value="dammam">كلية التقنية بالدمام</option>
+                        <option value="central">الإدارة العامة - المنطقة الوسطى</option>
+                    </select>
+                </div>
+                <div class="flex gap-3 mt-6">
+                    <button type="submit" class="btn-primary">إضافة المستخدم</button>
+                    <button type="button" class="btn-primary" onclick="closeModal('newUserModal')">إلغاء</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- New Ticket Modal -->
+    <div id="newTicketModal" class="modal">
+        <div class="modal-content">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-white font-semibold text-xl">طلب دعم جديد</h3>
+                <button class="text-white" onclick="closeModal('newTicketModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="newTicketForm" class="space-y-4">
+                <div>
+                    <label class="block text-white text-sm font-medium mb-2">الموضوع</label>
+                    <input type="text" class="form-control" placeholder="أدخل موضوع الطلب">
+                </div>
+                <div>
+                    <label class="block text-white text-sm font-medium mb-2">النوع</label>
+                    <select class="form-control">
+                        <option value="technical">مشكلة تقنية</option>
+                        <option value="training">طلب تدريب</option>
+                        <option value="suggestion">اقتراح تحسين</option>
+                        <option value="permission">مشكلة صلاحيات</option>
+                        <option value="general">استفسار عام</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-white text-sm font-medium mb-2">الأولوية</label>
+                    <select class="form-control">
+                        <option value="low">منخفضة</option>
+                        <option value="normal">عادية</option>
+                        <option value="high">مرتفعة</option>
+                        <option value="urgent">عاجلة</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-white text-sm font-medium mb-2">الوصف</label>
+                    <textarea class="form-control" rows="4" placeholder="وصف مفصل للمشكلة أو الطلب"></textarea>
+                </div>
+                <div>
+                    <label class="block text-white text-sm font-medium mb-2">إرفاق ملف</label>
+                    <input type="file" class="form-control">
+                </div>
+                <div class="flex gap-3 mt-6">
+                    <button type="submit" class="btn-primary">إرسال الطلب</button>
+                    <button type="button" class="btn-primary" onclick="closeModal('newTicketModal')">إلغاء</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            updateCurrentDate();
+            initializeCharts();
+            setupEventListeners();
+        });
+
+        // Update current date
+        function updateCurrentDate() {
+            const now = new Date();
+            const options = { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            };
+            document.getElementById('currentDate').textContent = now.toLocaleDateString('ar-SA', options);
+        }
+
+        // Initialize charts
+        function initializeCharts() {
+            // Monthly requests chart
+            const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
+            new Chart(monthlyCtx, {
+                type: 'line',
+                data: {
+                    labels: ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو'],
+                    datasets: [{
+                        label: 'الطلبات الشهرية',
+                        data: [12, 19, 8, 15, 22, 18],
+                        borderColor: '#4f46e5',
+                        backgroundColor: 'rgba(79, 70, 229, 0.1)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                color: 'white'
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                color: 'white'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: 'white'
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Patterns distribution chart
+            const patternsCtx = document.getElementById('patternsChart').getContext('2d');
+            new Chart(patternsCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['تدريب عن بُعد', 'تدريب ذاتي', 'تدريب مدمج'],
+                    datasets: [{
+                        data: [45, 25, 30],
+                        backgroundColor: ['#4f46e5', '#10b981', '#8b5cf6']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: 'white'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // Login form
+            document.getElementById('loginForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const username = document.getElementById('username').value;
+                const password = document.getElementById('password').value;
+                
+                if (username && password) {
+                    // Simulate login
+                    document.getElementById('loginPage').classList.add('page-hidden');
+                    document.getElementById('mainApp').classList.remove('page-hidden');
+                    showNotification('تم تسجيل الدخول بنجاح');
+                }
+            });
+
+            // New request form
+            document.getElementById('newRequestForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                closeModal('newRequestModal');
+                showNotification('تم إرسال الطلب بنجاح');
+            });
+
+            // New pattern form
+            document.getElementById('newPatternForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                closeModal('newPatternModal');
+                showNotification('تم إضافة النمط بنجاح');
+            });
+
+            // New user form
+            document.getElementById('newUserForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                closeModal('newUserModal');
+                showNotification('تم إضافة المستخدم بنجاح');
+            });
+
+            // New ticket form
+            document.getElementById('newTicketForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                closeModal('newTicketModal');
+                showNotification('تم إرسال طلب الدعم بنجاح');
+            });
+        }
+
+        // Show page function
+        function showPage(pageId) {
+            // Hide all pages
+            document.querySelectorAll('.page-content').forEach(page => {
+                page.classList.add('page-hidden');
+            });
+            
+            // Show selected page
+            document.getElementById(pageId + 'Page').classList.remove('page-hidden');
+            
+            // Update active sidebar item
+            document.querySelectorAll('.sidebar-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.target.closest('.sidebar-item').classList.add('active');
+        }
+
+        // Modal functions
+        function showModal(modalId) {
+            document.getElementById(modalId).style.display = 'flex';
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        function showNewRequestModal() {
+            showModal('newRequestModal');
+        }
+
+        function showNewPatternModal() {
+            showModal('newPatternModal');
+        }
+
+        function showNewUserModal() {
+            showModal('newUserModal');
+        }
+
+        function showNewTicketModal() {
+            showModal('newTicketModal');
+        }
+
+        function showWorkflowModal(requestId) {
+            showModal('workflowModal');
+        }
+
+        // Request functions
+        function showRequestDetails(requestId) {
+            showNotification('عرض تفاصيل الطلب: ' + requestId);
+        }
+
+        // Pattern functions
+        function editPattern(patternId) {
+            showNotification('تحرير النمط: ' + patternId);
+        }
+
+        function togglePattern(patternId) {
+            showNotification('تم تغيير حالة النمط: ' + patternId);
+        }
+
+        // User functions
+        function editUser(userId) {
+            showNotification('تحرير المستخدم: ' + userId);
+        }
+
+        function toggleUser(userId) {
+            showNotification('تم تغيير حالة المستخدم: ' + userId);
+        }
+
+        // File upload functions
+        function handleFileUpload(type, input) {
+            const file = input.files[0];
+            if (file) {
+                const progressBar = document.getElementById(type + 'Progress');
+                const status = document.getElementById(type + 'Status');
+                
+                status.textContent = 'جاري الرفع...';
+                
+                // Simulate upload progress
+                let progress = 0;
+                const interval = setInterval(() => {
+                    progress += 10;
+                    progressBar.style.width = progress + '%';
+                    
+                    if (progress >= 100) {
+                        clearInterval(interval);
+                        status.textContent = 'تم الرفع بنجاح';
+                        showNotification('تم رفع ملف ' + type + ' بنجاح');
+                    }
+                }, 200);
+            }
+        }
+
+        function downloadTemplate(type) {
+            showNotification('تم تحميل قالب ' + type);
+        }
+
+        // Notification function
+        function showNotification(message) {
+            const notification = document.getElementById('notification');
+            const notificationText = document.getElementById('notificationText');
+            
+            notificationText.textContent = message;
+            notification.style.display = 'block';
+            
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 3000);
+        }
+
+        // Logout function
+        function logout() {
+            document.getElementById('mainApp').classList.add('page-hidden');
+            document.getElementById('loginPage').classList.remove('page-hidden');
+            showNotification('تم تسجيل الخروج بنجاح');
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>
+    <script id="html_badge_script1">
+        window.__genspark_remove_badge_link = "https://www.genspark.ai/api/html_badge/" +
+            "remove_badge?token=To%2FBnjzloZ3UfQdcSaYfDhsgcrTdGfwWtDKg9zIJwAFquiRFgSg0oPtaw53EttlV6rkf%2Fw0S4Kv6xRTCuO6dQvFWsPHLIMfjRdwrDzLbc4b3VhymnoWSYPGunRc3Pbitrr5jSWbUA%2FGHAkVcoJoWlH%2Bjd0ERP08Zig7X%2Fn8gjlEH2lygVMBRI9nRZFJ0rB0ObApok0Boz2oI97%2FOyTD0i1MPWqyCFgMCjjZw2vC9LlhfXzy4QurGHuZgEKBjLaqcoQHX03Zz3h9wXVG52TZ%2B4Dgr1xdshG5T86IPcY16L%2FEoFraCfq6A7ZHcPF46zIEkgfTr7R4%2FsD6La5HUfrqqQMoqNaZ9GPqbA5EQQHa2aRMR2wTEuQby%2F8yMzsUwbjUlziV%2FtTpw7%2FNAcNBd4SmX%2Fp9A4WJ1ozBp2buvGAN6AZhJgX2AWrn%2BcdSwPv1s1dJsZAQ31FcPNsxVXPdcNaFUT1GTV34352gzeyF7ARa2jXxswhZTRK4CxvQKbmK2v%2BIvlJdk6dD9b%2FBQ98IPZLmhKw%3D%3D";
+        window.__genspark_locale = "en-US";
+        window.__genspark_token = "To/BnjzloZ3UfQdcSaYfDhsgcrTdGfwWtDKg9zIJwAFquiRFgSg0oPtaw53EttlV6rkf/w0S4Kv6xRTCuO6dQvFWsPHLIMfjRdwrDzLbc4b3VhymnoWSYPGunRc3Pbitrr5jSWbUA/GHAkVcoJoWlH+jd0ERP08Zig7X/n8gjlEH2lygVMBRI9nRZFJ0rB0ObApok0Boz2oI97/OyTD0i1MPWqyCFgMCjjZw2vC9LlhfXzy4QurGHuZgEKBjLaqcoQHX03Zz3h9wXVG52TZ+4Dgr1xdshG5T86IPcY16L/EoFraCfq6A7ZHcPF46zIEkgfTr7R4/sD6La5HUfrqqQMoqNaZ9GPqbA5EQQHa2aRMR2wTEuQby/8yMzsUwbjUlziV/tTpw7/NAcNBd4SmX/p9A4WJ1ozBp2buvGAN6AZhJgX2AWrn+cdSwPv1s1dJsZAQ31FcPNsxVXPdcNaFUT1GTV34352gzeyF7ARa2jXxswhZTRK4CxvQKbmK2v+IvlJdk6dD9b/BQ98IPZLmhKw==";
+    </script>
+    
+    <script id="html_notice_dialog_script" src="https://www.genspark.ai/notice_dialog.js"></script>
+    
